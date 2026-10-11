@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check every screensaver in screensavers/<id>/ and build index.json.
+"""Check every screensaver in screensavers/<id>/, build index.json and the gallery in README.md.
 
 A screensaver is a folder with saver.json (name, blurb, author, license …), an index.html that runs on its own, a
 preview image, and optionally an assets/ folder. Shell:B installs it as a Screensaver project and shows index.html full
@@ -7,9 +7,10 @@ screen in a sandboxed iframe (scripts only: no same-origin, no network beyond th
 here are about keeping that promise and about running for hours: no external URLs, no audio, no fetch/sockets, sane
 sizes. Standard library only; run from the repository root:
 
-    python3 -I scripts/validate.py          # check + rebuild index.json
-    python3 -I scripts/validate.py --check  # check only (CI); exits 1 on any error
+    python3 -I scripts/validate.py          # check + rebuild index.json and the README gallery
+    python3 -I scripts/validate.py --check  # check only (CI); exits 1 on any error or stale generated file
 """
+import html
 import json
 import re
 import sys
@@ -17,7 +18,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SAVERS = ROOT / "screensavers"
+README = ROOT / "README.md"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,39}$")
+URL_RE = re.compile(r"^https?://[^\s\"'<>]{1,200}$")
+START, END = "<!-- gallery:start -->", "<!-- gallery:end -->"
 ALLOWED = {".html", ".css", ".js", ".json", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".woff2", ".txt", ".md"}
 MAX_FILE, MAX_FOLDER, MAX_PREVIEW = 2 * 2**20, 8 * 2**20, 400 * 2**10
 EXTERNAL = re.compile(r"""(?:src|href|url\(|@import\s+)\s*=?\s*['"(]?\s*(https?:)?//""", re.I)
@@ -55,8 +59,19 @@ def check(folder: Path) -> tuple[dict | None, list[str], list[str]]:
     if not meta.get("blurb"):
         warnings.append("no blurb; the picker shows only the name")
     for key in ("author", "license"):
-        if not meta.get(key):
+        if not meta.get(key) or not isinstance(meta[key], str):
             errors.append(f"{key} is required (license: an SPDX id such as MIT or CC0-1.0)")
+    if isinstance(meta.get("author"), str) and len(meta["author"]) > 80:
+        errors.append("author: at most 80 characters")
+    for key in ("authorUrl", "homepage"):
+        if meta.get(key) is not None and not (isinstance(meta[key], str) and URL_RE.match(meta[key])):
+            errors.append(f"{key} must be an http(s) URL")
+    credits = meta.get("credits")
+    if credits is not None:
+        if not isinstance(credits, list) or any(not isinstance(c, dict) or not c.get("what") or not c.get("author") or not c.get("license") for c in credits):
+            errors.append("credits: a list of {what, author, license, url?} for anything you didn't make yourself (fonts, textures, code)")
+        elif any(c.get("url") is not None and not (isinstance(c["url"], str) and URL_RE.match(c["url"])) for c in credits):
+            errors.append("credits[].url must be an http(s) URL")
     if meta.get("tags") is not None and not (isinstance(meta["tags"], list) and all(isinstance(t, str) for t in meta["tags"])):
         errors.append("tags must be a list of strings")
     if meta.get("clockSafe") not in (None, True, False):
@@ -102,9 +117,31 @@ def check(folder: Path) -> tuple[dict | None, list[str], list[str]]:
     if total > MAX_FOLDER:
         errors.append(f"the folder is over {MAX_FOLDER // 2**20} MB in all")
     for k in meta:
-        if k not in ("id", "name", "blurb", "author", "license", "version", "tags", "homepage", "clockSafe", "credits"):
+        if k not in ("id", "name", "blurb", "author", "authorUrl", "license", "version", "tags", "homepage", "clockSafe", "credits"):
             warnings.append(f"saver.json: unknown key {k!r} is ignored")
     return meta, errors, warnings
+
+
+def gallery_html(index: list[dict]) -> str:
+    """The README gallery: preview, name, author (linked when authorUrl is given), license; three to a row."""
+    cells = []
+    for it in index:
+        by = html.escape(it["author"])
+        if it.get("authorUrl"):
+            by = f'<a href="{html.escape(it["authorUrl"], quote=True)}">{by}</a>'
+        cells.append(f'<td align="center" valign="top" width="33%"><a href="{it["path"]}"><img src="{it["preview"]}" alt="{html.escape(it["name"], quote=True)}" width="100%"></a>'
+                     f'<br><b>{html.escape(it["name"])}</b><br><sub>by {by} · {html.escape(it["license"])}</sub></td>')
+    rows = "\n".join("<tr>\n" + "\n".join(cells[i:i + 3]) + "\n</tr>" for i in range(0, len(cells), 3))
+    return f"{START}\n<table>\n{rows}\n</table>\n{END}"
+
+
+def readme_with_gallery(index: list[dict]) -> str | None:
+    text = README.read_text()
+    if START not in text or END not in text:
+        return None
+    head, rest = text.split(START, 1)
+    _, tail = rest.split(END, 1)
+    return head + gallery_html(index) + tail
 
 
 def main() -> int:
@@ -123,14 +160,26 @@ def main() -> int:
         files = sorted(str(p.relative_to(folder)) for p in folder.rglob("*") if p.is_file() and p.name != "saver.json" and p != preview)
         index.append({
             "id": folder.name, "name": meta["name"], "blurb": meta.get("blurb", ""), "author": meta.get("author", ""),
-            "license": meta.get("license", ""), "version": meta.get("version", "1.0"), "tags": meta.get("tags", []),
-            "clockSafe": meta.get("clockSafe", True), "path": f"screensavers/{folder.name}",
-            "preview": f"screensavers/{folder.name}/{preview.name}", "files": files,
+            "authorUrl": meta.get("authorUrl", ""), "license": meta.get("license", ""), "version": meta.get("version", "1.0"),
+            "tags": meta.get("tags", []), "credits": meta.get("credits", []), "clockSafe": meta.get("clockSafe", True),
+            "path": f"screensavers/{folder.name}", "preview": f"screensavers/{folder.name}/{preview.name}", "files": files,
         })
-    if not check_only:
-        (ROOT / "index.json").write_text(json.dumps({"format": 1, "kind": "screensaver", "items": index}, indent=1, ensure_ascii=False) + "\n")
-    print(f"{len(index)} screensaver{'s' if len(index) != 1 else ''} ok, {bad} with errors")
-    return 1 if bad else 0
+    idx = json.dumps({"format": 1, "kind": "screensaver", "items": index}, indent=1, ensure_ascii=False) + "\n"
+    readme = readme_with_gallery(index)
+    stale = []
+    if check_only:
+        if not (ROOT / "index.json").exists() or (ROOT / "index.json").read_text() != idx:
+            stale.append("index.json")
+        if readme is not None and readme != README.read_text():
+            stale.append("README.md (gallery)")
+        for st in stale:
+            print(f"  stale: {st} (run scripts/validate.py and commit)")
+    else:
+        (ROOT / "index.json").write_text(idx)
+        if readme is not None:
+            README.write_text(readme)
+    print(f"{len(index)} screensaver{'s' if len(index) != 1 else ''} ok, {bad} with errors" + (f", {len(stale)} generated file(s) stale" if stale else ""))
+    return 1 if bad or stale else 0
 
 
 if __name__ == "__main__":

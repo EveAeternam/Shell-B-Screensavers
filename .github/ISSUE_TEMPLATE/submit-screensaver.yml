@@ -1,0 +1,46 @@
+name: Submit a screensaver
+description: Share a screensaver without using git. A maintainer adds it to the catalogue with you as the author.
+title: "[Screensaver] "
+labels: [screensaver-submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Link the files (a gist, a zip, a repository, or the project exported from Shell:B's Studio) and we'll add the
+        folder for you. The rules are in the README. You'll be credited as the author in the picker, the gallery and index.json.
+  - type: input
+    id: name
+    attributes:
+      label: Screensaver name
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Credit as
+    validations:
+      required: true
+  - type: input
+    id: author-url
+    attributes:
+      label: Link for your name (optional)
+      placeholder: https://github.com/you
+  - type: dropdown
+    id: license
+    attributes:
+      label: License
+      options: [MIT, CC0-1.0, CC-BY-4.0]
+    validations:
+      required: true
+  - type: input
+    id: files
+    attributes:
+      label: Where the files are
+      placeholder: https://gist.github.com/… or a link to a zip
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: What it does, how it changes over time, anything in it that isn't yours (we'll add it to credits).

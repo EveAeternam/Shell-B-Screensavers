@@ -2,8 +2,13 @@
   "name": "Ink Currents",
   "blurb": "Thousands of ink particles ride a slowly turning flow field, leaving trails that fade like ink in water. The current and the palette shift over minutes.",
   "author": "Shell:B",
+  "authorUrl": "https://github.com/EveAeternam/Shell-B",
   "license": "MIT",
   "version": "1.0",
-  "tags": ["generative", "flow field", "calm"],
+  "tags": [
+    "generative",
+    "flow field",
+    "calm"
+  ],
   "clockSafe": true
 }
