@@ -1,6 +1,9 @@
 # Shell:B Screensavers
 
+[![Validate](https://github.com/EveAeternam/Shell-B-Screensavers/actions/workflows/validate.yml/badge.svg)](https://github.com/EveAeternam/Shell-B-Screensavers/actions/workflows/validate.yml) [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Community screensavers for [Shell:B](https://github.com/EveAeternam/Shell-B), the local-first AI workspace.
+Part of the family with [Shell-B-Themes](https://github.com/EveAeternam/Shell-B-Themes) and [Shell-B-Agents](https://github.com/EveAeternam/Shell-B-Agents).
 
 A Shell:B screensaver is one `index.html` (plus whatever it needs in its folder) that animates forever with nobody
 touching it. Shell:B shows it full screen in a sandboxed frame when the computer has been idle for a while, and any key
@@ -88,3 +91,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request checklist.
 ## License
 
 The scripts and this repository are MIT. Each screensaver names its own license in `saver.json`; the ones here are MIT.
+
+## Other collections
+
+Shell:B installs from the whole family: [Shell-B-Themes](https://github.com/EveAeternam/Shell-B-Themes) and [Shell-B-Agents](https://github.com/EveAeternam/Shell-B-Agents) work the same way, with a validator, CI and a one-screen checklist each. Found a bug in the app itself? That goes to [Shell-B issues](https://github.com/EveAeternam/Shell-B/issues); questions and show-and-tell to [Discussions](https://github.com/EveAeternam/Shell-B/discussions).
