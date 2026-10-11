@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthwave Horizon</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05010d; overflow: hidden; cursor: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// Synthwave Horizon: the screensaver Shell:B ships with, as a stand-alone page.
+// Tuning
+const PINK = '#ff2e97', STAR_COUNT = 160, GRID_SPEED = 0.6, SUN_BAND_SPEED = 0.35;
+
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const slow = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1;
+let w = 0, h = 0, t = 0, last = performance.now();
+function size() {
+  const dpr = Math.min(1.5, devicePixelRatio || 1);
+  w = innerWidth; h = innerHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener('resize', size); size();
+
+const sky = Array.from({ length: STAR_COUNT }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.2 + 0.2, p: Math.random() * Math.PI * 2 }));
+
+function draw() {
+  const hz = h * 0.58, cx = w / 2;
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, hz);
+  skyGrad.addColorStop(0, '#05010d'); skyGrad.addColorStop(0.6, '#1a0733'); skyGrad.addColorStop(1, '#4a0b4f');
+  ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, w, hz);
+
+  for (const s of sky) {
+    if (s.y * h > hz - 20) continue;
+    ctx.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t * 0.8 + s.p));
+    ctx.fillStyle = '#fff'; ctx.fillRect(s.x * w, s.y * hz, s.r, s.r);
+  }
+  ctx.globalAlpha = 1;
+
+  // the sun, cut by bands that scroll down into the horizon
+  const r = Math.min(w, h) * 0.24, sy = hz - r * 0.35;
+  ctx.save();
+  ctx.shadowColor = PINK; ctx.shadowBlur = 60;
+  const sun = ctx.createLinearGradient(0, sy - r, 0, sy + r);
+  sun.addColorStop(0, '#ffe45e'); sun.addColorStop(0.5, '#ff8a3d'); sun.addColorStop(1, PINK);
+  ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(cx, sy, r, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = skyGrad;
+  for (let i = 0; i < 9; i++) {
+    const f = (i + (t * SUN_BAND_SPEED) % 1) / 9;
+    const y = sy - r * 0.1 + f * r * 1.1, th = 1 + f * r * 0.09;
+    if (y < hz) ctx.fillRect(cx - r - 2, y, r * 2 + 4, Math.min(th, hz - y));
+  }
+
+  // ground and grid
+  const ground = ctx.createLinearGradient(0, hz, 0, h);
+  ground.addColorStop(0, '#12021f'); ground.addColorStop(1, '#05010d');
+  ctx.fillStyle = ground; ctx.fillRect(0, hz, w, h - hz);
+  ctx.save();
+  ctx.shadowColor = PINK; ctx.shadowBlur = 10; ctx.strokeStyle = PINK; ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  const depth = h - hz;
+  for (let i = -24; i <= 24; i++) { ctx.moveTo(cx + i * w * 0.012, hz); ctx.lineTo(cx + i * w * 0.16, h); }
+  const phase = (t * GRID_SPEED) % 1;
+  for (let z = 0; z < 22; z++) {
+    const d = z + 1 - phase, y = hz + depth * (1 / d) * 0.9;
+    if (y > h || y < hz) continue;
+    ctx.globalAlpha = Math.min(1, (y - hz) / (depth * 0.15));
+    ctx.moveTo(0, y); ctx.lineTo(w, y);
+  }
+  ctx.stroke(); ctx.restore(); ctx.globalAlpha = 1;
+
+  const glow = ctx.createLinearGradient(0, hz - 30, 0, hz + 30);
+  glow.addColorStop(0, 'rgba(255,46,151,0)'); glow.addColorStop(0.5, 'rgba(255,46,151,0.55)'); glow.addColorStop(1, 'rgba(255,46,151,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, hz - 30, w, 60);
+}
+
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000) * slow; last = now; t += dt;
+  if (!document.hidden) draw();
+  requestAnimationFrame(frame);
+}
+draw();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

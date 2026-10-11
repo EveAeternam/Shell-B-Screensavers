@@ -1,0 +1,9 @@
+{
+  "name": "Koi Pond",
+  "blurb": "A slow koi pond at night seen from above: koi glide and turn in schools, ripples spread where they surface, lily pads drift, moonlight shimmers on the water.",
+  "author": "Evie & Shell:B",
+  "license": "MIT",
+  "version": "1.0",
+  "tags": ["water", "animals", "calm", "night"],
+  "clockSafe": true
+}

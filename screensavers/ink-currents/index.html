@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ink Currents</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #070910; overflow: hidden; cursor: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// Ink Currents: particles advected through a layered-noise flow field. The field rotates and breathes over
+// minutes, and the ink hue drifts around the wheel every ~8 minutes, so it never settles into a loop.
+// Tuning
+const COUNT = 2400;          // particles (pool, never grows)
+const FADE = 0.035;          // trail fade per frame (lower = longer trails)
+const SPEED = 42;            // px/s at full strength
+const SCALE = 0.0022;        // field scale (smaller = broader swirls)
+const DRIFT = 0.018;         // how fast the field changes
+const HUE_PERIOD = 480;      // seconds for one trip around the hue wheel
+const LIFE = [6, 14];        // seconds before a particle is reseeded
+
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const slow = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.3 : 1;
+let w = 0, h = 0, t = 0, last = performance.now();
+function size() {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  w = innerWidth; h = innerHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.fillStyle = '#070910'; g.fillRect(0, 0, w, h);
+}
+addEventListener('resize', size); size();
+
+// value noise with a permutation table (no library)
+const perm = new Uint8Array(512);
+{ const p = Array.from({ length: 256 }, (_, i) => i); for (let i = 255; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [p[i], p[j]] = [p[j], p[i]]; } for (let i = 0; i < 512; i++) perm[i] = p[i & 255]; }
+const fade = s => s * s * (3 - 2 * s);
+function noise(x, y, z) {
+  const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+  x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+  const u = fade(x), v = fade(y), s = fade(z);
+  const val = (i, j, k) => perm[perm[perm[(X + i) & 255] + ((Y + j) & 255)] + ((Z + k) & 255)] / 255;
+  const lerp = (a, b, q) => a + (b - a) * q;
+  return lerp(
+    lerp(lerp(val(0, 0, 0), val(1, 0, 0), u), lerp(val(0, 1, 0), val(1, 1, 0), u), v),
+    lerp(lerp(val(0, 0, 1), val(1, 0, 1), u), lerp(val(0, 1, 1), val(1, 1, 1), u), v), s);
+}
+function angle(x, y, z) {
+  const n = noise(x * SCALE, y * SCALE, z) * 0.7 + noise(x * SCALE * 3.1, y * SCALE * 3.1, z * 1.7) * 0.3;
+  return n * Math.PI * 4 + Math.sin(z * 0.7) * 0.6;  // several full turns across the field; a slow global twist
+}
+
+const P = new Float32Array(COUNT * 4);  // x, y, life, shade
+function seed(i, fresh) {
+  P[i * 4] = Math.random() * w; P[i * 4 + 1] = Math.random() * h;
+  P[i * 4 + 2] = fresh ? Math.random() * LIFE[1] : LIFE[0] + Math.random() * (LIFE[1] - LIFE[0]);
+  P[i * 4 + 3] = Math.random();
+}
+for (let i = 0; i < COUNT; i++) seed(i, true);
+
+function draw(dt) {
+  g.fillStyle = `rgba(7,9,16,${FADE})`; g.fillRect(0, 0, w, h);
+  const z = t * DRIFT, hue = (t / HUE_PERIOD * 360) % 360;
+  const breath = 0.75 + 0.25 * Math.sin(t * 0.05);
+  g.lineCap = 'round'; g.lineWidth = 1.1;
+  for (let i = 0; i < COUNT; i++) {
+    const o = i * 4;
+    let x = P[o], y = P[o + 1];
+    const a = angle(x, y, z), v = SPEED * breath * (0.6 + P[o + 3] * 0.8) * dt;
+    const nx = x + Math.cos(a) * v, ny = y + Math.sin(a) * v;
+    P[o + 2] -= dt;
+    if (nx < -4 || nx > w + 4 || ny < -4 || ny > h + 4 || P[o + 2] <= 0) { seed(i, false); continue; }
+    const sh = P[o + 3];
+    g.strokeStyle = `hsl(${(hue + sh * 50 - 25 + 360) % 360} ${55 + sh * 25}% ${48 + sh * 22}% / ${0.35 + sh * 0.4})`;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(nx, ny); g.stroke();
+    P[o] = nx; P[o + 1] = ny;
+  }
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000) * slow; last = now; t += dt;
+  if (!document.hidden) draw(dt);
+  requestAnimationFrame(frame);
+}
+for (let i = 0; i < 90; i++) { t += 1 / 60; draw(1 / 60); }  // the first frame already shows currents
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

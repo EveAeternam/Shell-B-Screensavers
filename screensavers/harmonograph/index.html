@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harmonograph</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; cursor: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// Harmonograph: x and y are each the sum of two damped sinusoids (four pendulums), drawn as the pen would, one
+// stroke per frame. When the pendulums have died down the figure fades and new frequencies, phases and damping are
+// drawn; the ink hue follows the hour of the day.
+// Tuning
+const DRAW_SPEED = 2.6;      // seconds of pendulum time per real second
+const FADE_TIME = 7;         // seconds for a finished figure to fade
+const DAMP = [0.004, 0.009]; // damping range (higher = shorter figures)
+const LINE = 0.9;            // pen width
+
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const slow = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.3 : 1;
+let w = 0, h = 0, t = 0, last = performance.now();
+function size() {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  w = innerWidth; h = innerHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.fillStyle = '#0b0d12'; g.fillRect(0, 0, w, h);
+  if (fig) { fig.done = true; fig.fade = FADE_TIME; }  // a new figure on the new paper size
+}
+addEventListener('resize', size);
+
+let fig = null;
+const rnd = (a, b) => a + Math.random() * (b - a);
+function newFigure() {
+  const ratio = [[1, 2], [2, 3], [3, 4], [3, 5], [4, 5], [5, 6], [1, 3], [2, 5]][(Math.random() * 8) | 0];
+  const base = rnd(1.6, 2.4);
+  const hour = new Date().getHours() + new Date().getMinutes() / 60;
+  return {
+    ax: rnd(0.3, 0.5) * Math.min(w, h), ay: rnd(0.3, 0.5) * Math.min(w, h),
+    f: [base * ratio[0], base * ratio[1] + rnd(-0.02, 0.02), base * ratio[1], base * ratio[0] + rnd(-0.02, 0.02)],
+    p: [rnd(0, 6.28), rnd(0, 6.28), rnd(0, 6.28), rnd(0, 6.28)],
+    d: [rnd(DAMP[0], DAMP[1]), rnd(DAMP[0], DAMP[1]), rnd(DAMP[0], DAMP[1]), rnd(DAMP[0], DAMP[1])],
+    mix: rnd(0.3, 0.7), s: 0, prev: null, done: false, fade: 0,
+    hue: (hour / 24) * 360 + rnd(-20, 20),
+    cx: w / 2 + rnd(-0.06, 0.06) * w, cy: h / 2 + rnd(-0.06, 0.06) * h,
+  };
+}
+size();
+fig = newFigure();
+
+function pen(s) {
+  const f = fig;
+  const x = f.cx + f.ax * (f.mix * Math.sin(f.f[0] * s + f.p[0]) * Math.exp(-f.d[0] * s) + (1 - f.mix) * Math.sin(f.f[1] * s + f.p[1]) * Math.exp(-f.d[1] * s));
+  const y = f.cy + f.ay * (f.mix * Math.sin(f.f[2] * s + f.p[2]) * Math.exp(-f.d[2] * s) + (1 - f.mix) * Math.sin(f.f[3] * s + f.p[3]) * Math.exp(-f.d[3] * s));
+  return [x, y];
+}
+
+function draw(dt) {
+  const f = fig;
+  if (f.done) {
+    g.fillStyle = `rgba(11,13,18,${Math.min(1, dt / FADE_TIME * 3)})`; g.fillRect(0, 0, w, h);
+    f.fade -= dt;
+    if (f.fade <= 0) { g.fillStyle = '#0b0d12'; g.fillRect(0, 0, w, h); fig = newFigure(); }
+    return;
+  }
+  const steps = Math.max(1, Math.round(dt * DRAW_SPEED * 240));
+  const ds = dt * DRAW_SPEED / steps;
+  g.lineWidth = LINE; g.lineCap = 'round';
+  for (let i = 0; i < steps; i++) {
+    const [x, y] = pen(f.s);
+    if (f.prev) {
+      const amp = Math.exp(-Math.min(f.d[0], f.d[1]) * f.s);
+      g.strokeStyle = `hsl(${f.hue + f.s * 0.4} 70% ${62 - amp * 10}% / ${0.18 + amp * 0.5})`;
+      g.beginPath(); g.moveTo(f.prev[0], f.prev[1]); g.lineTo(x, y); g.stroke();
+    }
+    f.prev = [x, y]; f.s += ds;
+  }
+  if (Math.exp(-Math.min(...f.d) * f.s) < 0.03) { f.done = true; f.fade = FADE_TIME; }
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000) * slow; last = now; t += dt;
+  if (!document.hidden) draw(dt);
+  requestAnimationFrame(frame);
+}
+for (let i = 0; i < 240; i++) draw(1 / 60);  // the first frame shows a figure well under way
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

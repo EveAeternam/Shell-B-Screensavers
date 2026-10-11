@@ -1,0 +1,120 @@
+{
+ "format": 1,
+ "kind": "screensaver",
+ "items": [
+  {
+   "id": "bouncing-logo",
+   "name": "Bouncing Logo",
+   "blurb": "The Shell:B tile drifts across a starry black, changes colour on every wall and flashes when it hits a corner. You know the one.",
+   "author": "Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "classic",
+    "playful"
+   ],
+   "clockSafe": false,
+   "path": "screensavers/bouncing-logo",
+   "preview": "screensavers/bouncing-logo/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  },
+  {
+   "id": "harmonograph",
+   "name": "Harmonograph",
+   "blurb": "A pen on damped pendulums draws Lissajous roses on dark paper, one figure fading into the next. Every figure is new; the ink changes with the hour.",
+   "author": "Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "geometry",
+    "generative",
+    "slow"
+   ],
+   "clockSafe": true,
+   "path": "screensavers/harmonograph",
+   "preview": "screensavers/harmonograph/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  },
+  {
+   "id": "ink-currents",
+   "name": "Ink Currents",
+   "blurb": "Thousands of ink particles ride a slowly turning flow field, leaving trails that fade like ink in water. The current and the palette shift over minutes.",
+   "author": "Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "generative",
+    "flow field",
+    "calm"
+   ],
+   "clockSafe": true,
+   "path": "screensavers/ink-currents",
+   "preview": "screensavers/ink-currents/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  },
+  {
+   "id": "koi-pond",
+   "name": "Koi Pond",
+   "blurb": "A slow koi pond at night seen from above: koi glide and turn in schools, ripples spread where they surface, lily pads drift, moonlight shimmers on the water.",
+   "author": "Evie & Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "water",
+    "animals",
+    "calm",
+    "night"
+   ],
+   "clockSafe": true,
+   "path": "screensavers/koi-pond",
+   "preview": "screensavers/koi-pond/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  },
+  {
+   "id": "starfield-warp",
+   "name": "Starfield Warp",
+   "blurb": "Nine hundred stars streak past in white, cyan, pink and violet while the vanishing point drifts. Shell:B's built-in warp.",
+   "author": "Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "space",
+    "classic",
+    "fast"
+   ],
+   "clockSafe": true,
+   "path": "screensavers/starfield-warp",
+   "preview": "screensavers/starfield-warp/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  },
+  {
+   "id": "synthwave-horizon",
+   "name": "Synthwave Horizon",
+   "blurb": "A striped sun sinks toward a neon grid that scrolls toward you under a starry violet sky. Shell:B's original screensaver.",
+   "author": "Shell:B",
+   "license": "MIT",
+   "version": "1.0",
+   "tags": [
+    "retro",
+    "neon",
+    "grid"
+   ],
+   "clockSafe": true,
+   "path": "screensavers/synthwave-horizon",
+   "preview": "screensavers/synthwave-horizon/preview.jpg",
+   "files": [
+    "index.html"
+   ]
+  }
+ ]
+}

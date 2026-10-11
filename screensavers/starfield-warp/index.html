@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starfield Warp</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #04010a; overflow: hidden; cursor: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// Starfield Warp: Shell:B's built-in warp as a stand-alone page.
+// Tuning
+const COUNT = 900, TINTS = ['#ffffff', '#ffffff', '#cfe9ff', '#22d3ee', '#ff2e97', '#a855f7'], TRAIL = 0.35;
+
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const slow = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1;
+let w = 0, h = 0, t = 0, last = performance.now();
+function size() {
+  const dpr = Math.min(1.5, devicePixelRatio || 1);
+  w = innerWidth; h = innerHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#04010a'; ctx.fillRect(0, 0, w, h);
+}
+addEventListener('resize', size); size();
+
+const spawn = (z = 1) => ({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z, c: TINTS[(Math.random() * TINTS.length) | 0] });
+const pts = Array.from({ length: COUNT }, () => spawn(Math.random()));
+
+function draw(dt) {
+  ctx.fillStyle = `rgba(4,1,10,${TRAIL})`; ctx.fillRect(0, 0, w, h);
+  const cx = w / 2 + Math.sin(t * 0.13) * w * 0.06, cy = h / 2 + Math.cos(t * 0.17) * h * 0.05;
+  const f = Math.max(w, h) * 0.5, v = 0.22 + 0.1 * Math.sin(t * 0.25);
+  ctx.lineCap = 'round';
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i], pz = p.z;
+    p.z -= v * dt;
+    if (p.z <= 0.02) { pts[i] = spawn(); continue; }
+    const x0 = cx + (p.x / pz) * f, y0 = cy + (p.y / pz) * f, x1 = cx + (p.x / p.z) * f, y1 = cy + (p.y / p.z) * f;
+    if (x1 < -50 || x1 > w + 50 || y1 < -50 || y1 > h + 50) { pts[i] = spawn(); continue; }
+    ctx.globalAlpha = Math.min(1, (1 - p.z) * 1.4);
+    ctx.strokeStyle = p.c; ctx.lineWidth = Math.max(0.5, (1 - p.z) * 2.6);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000) * slow; last = now; t += dt;
+  if (!document.hidden) draw(dt);
+  requestAnimationFrame(frame);
+}
+for (let i = 0; i < 20; i++) draw(1 / 60);  // a strong first frame
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

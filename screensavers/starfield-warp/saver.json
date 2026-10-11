@@ -1,0 +1,9 @@
+{
+  "name": "Starfield Warp",
+  "blurb": "Nine hundred stars streak past in white, cyan, pink and violet while the vanishing point drifts. Shell:B's built-in warp.",
+  "author": "Shell:B",
+  "license": "MIT",
+  "version": "1.0",
+  "tags": ["space", "classic", "fast"],
+  "clockSafe": true
+}
