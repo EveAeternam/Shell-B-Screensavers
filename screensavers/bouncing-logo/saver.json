@@ -2,7 +2,7 @@
   "name": "Bouncing Logo",
   "blurb": "The Shell:B tile drifts across a starry black, changes colour on every wall and flashes when it hits a corner. You know the one.",
   "author": "Shell:B",
-  "authorUrl": "https://github.com/EveAeternam/Shell-B",
+  "authorUrl": "https://github.com/ShellB-App/Shell-B",
   "license": "MIT",
   "version": "1.0",
   "tags": [

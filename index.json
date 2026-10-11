@@ -7,7 +7,7 @@
    "name": "Bouncing Logo",
    "blurb": "The Shell:B tile drifts across a starry black, changes colour on every wall and flashes when it hits a corner. You know the one.",
    "author": "Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
@@ -27,7 +27,7 @@
    "name": "Harmonograph",
    "blurb": "A pen on damped pendulums draws Lissajous roses on dark paper, one figure fading into the next. Every figure is new; the ink changes with the hour.",
    "author": "Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
@@ -48,7 +48,7 @@
    "name": "Ink Currents",
    "blurb": "Thousands of ink particles ride a slowly turning flow field, leaving trails that fade like ink in water. The current and the palette shift over minutes.",
    "author": "Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
@@ -69,7 +69,7 @@
    "name": "Koi Pond",
    "blurb": "A slow koi pond at night seen from above: koi glide and turn in schools, ripples spread where they surface, lily pads drift, moonlight shimmers on the water.",
    "author": "Evie & Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
@@ -91,7 +91,7 @@
    "name": "Starfield Warp",
    "blurb": "Nine hundred stars streak past in white, cyan, pink and violet while the vanishing point drifts. Shell:B's built-in warp.",
    "author": "Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
@@ -112,7 +112,7 @@
    "name": "Synthwave Horizon",
    "blurb": "A striped sun sinks toward a neon grid that scrolls toward you under a starry violet sky. Shell:B's original screensaver.",
    "author": "Shell:B",
-   "authorUrl": "https://github.com/EveAeternam/Shell-B",
+   "authorUrl": "https://github.com/ShellB-App/Shell-B",
    "license": "MIT",
    "version": "1.0",
    "tags": [
